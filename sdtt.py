@@ -9,9 +9,9 @@ def outcomes(data, accuracy, signal):
 
     # make a list of conditions here to use with values later
     conditions = [
-            (dat[accuracy] == 1) & (dat[signal] == 1) # hit
-            (dat[accuracy] == 0) & (dat[signal] == 1) # miss
-            (dat[accuracy] == 1) & (dat[signal] == 0) # correct rejection
+            (dat[accuracy] == 1) & (dat[signal] == 1), # hit
+            (dat[accuracy] == 0) & (dat[signal] == 1), # miss
+            (dat[accuracy] == 1) & (dat[signal] == 0), # correct rejection
             (dat[accuracy] == 0) & (dat[signal] == 0) # false alarm
             ]
 
@@ -19,7 +19,7 @@ def outcomes(data, accuracy, signal):
     values = ["hit", "miss", "correct_rejection", "false_alarm"]
 
     # create new column and use 'np.select' to assign values
-    dat["outcome"] = np.select(conditions, values, np.dtypes.Int64Dtype)
+    dat["outcome"] = np.select(conditions, values, np.dtypes.Int64DType)
 
     # return data frame
     return dat
@@ -46,3 +46,20 @@ def props(data, id, outcome, condition = None, correction = None):
 
     # return data
     return df
+
+# TODO: implement overall function for calculations
+
+# function to calculate d'
+def dprime(data, hit_var, fa_var):
+    dat = data
+
+    dat["measure", "d_prime"] = stats.norm.ppf(dat[hit_var]) - stats.norm.ppf(dat[fa_var])
+
+    return dat
+
+
+
+
+
+
+
