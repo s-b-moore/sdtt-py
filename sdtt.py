@@ -57,7 +57,13 @@ def dprime(data, hit_var, fa_var):
 
     return dat
 
+# function to calculate criterion location
+def criterion(data, hit_var, fa_var):
+    dat = data
 
+    dat["measure", "criterion_location"] = -0.5 * (stats.norm.ppf(dat[hit_var]) + stats.norm.ppf(dat[fa_var]))
+
+    return dat
 
 
 
