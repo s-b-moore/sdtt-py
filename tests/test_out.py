@@ -16,6 +16,7 @@ dat_miss = pd.DataFrame({"accuracy": [0], "signal": [1]})
 dat_cr = pd.DataFrame({"accuracy": [1], "signal": [0]})
 dat_fa = pd.DataFrame({"accuracy": [0], "signal": [0]})
 
+# set up class for testing
 class TestOut(unittest.TestCase):
 
     def test_hit(self):
