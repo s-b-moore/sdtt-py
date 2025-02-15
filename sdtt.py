@@ -32,17 +32,17 @@ def props(data, id, outcome, condition = None, correction = None):
     if condition is None:
         df = pd.DataFrame({"count": dat.groupby([id, outcome]).size()}).reset_index()
         df = df.pivot(columns = outcome, index = id).reset_index()
-        df = df.fillna(0)
+        df = df.fillna(0) # zero count returns na/nan 
     else:
         df = pd.DataFrame({"count": dat.groupby([id, condition, outcome]).size()}).reset_index()
         df = df.pivot(columns = outcome, index = [id, condition]).reset_index()
         df = df.fillna(0)
 
     # proportions are calculated here
-    df["proportions", "hit"] = df["count", "hit"] / (df["count", "hit"] + df["count", "miss"])
-    df["proportions", "miss"] = df["count", "miss"] / (df["count", "miss"] + df["count", "hit"])
-    df["proportions", "correct_rejection"] = df["count", "correct_rejection"] / (df["count", "correct_rejection"] + df["count", "false_alarm"])
-    df["proportions", "false_alarm"] = df["count", "false_alarm"] / (df["count", "false_alarm"] + df["count", "correct_rejection"])
+    df["proportion", "hit"] = df["count", "hit"] / (df["count", "hit"] + df["count", "miss"])
+    df["proportion", "miss"] = df["count", "miss"] / (df["count", "miss"] + df["count", "hit"])
+    df["proportion", "correct_rejection"] = df["count", "correct_rejection"] / (df["count", "correct_rejection"] + df["count", "false_alarm"])
+    df["proportion", "false_alarm"] = df["count", "false_alarm"] / (df["count", "false_alarm"] + df["count", "correct_rejection"])
 
     # return data
     return df
@@ -65,7 +65,21 @@ def criterion(data, hit_var, fa_var):
 
     return dat
 
+# function to calculate relative criterion location (c')
+def cprime(data, hit_var, fa_var):
+    dat = data.copy()
 
+    dat["measure", "c_prime"] = -0.5 * (stats.norm.ppf(dat[hit_var]) + stats.norm.ppf(dat[fa_var])) / (stats.norm.ppf(dat[hit_var]) - stats.norm.ppf(dat[fa_var]))
+
+    return dat
+
+# function to calculate likelihood ratio (beta)
+def lr_beta(data, hit_var, fa_var):
+    dat = data.copy()
+
+    dat["measure", "lr_beta"] = -0.5 * (stats.norm.ppf(dat[hit_var])^2 - stats.norm.ppf(dat[fa_var])^2)
+
+    return dat
 
 
 

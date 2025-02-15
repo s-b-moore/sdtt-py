@@ -5,74 +5,84 @@ from scipy import stats
 
 # read in data for testing
 dat = pd.read_csv("data/example_data.csv")
+out_dat = dat.copy()
 
 # --- assign outcomes
 # generate a list of conditions
 conditions = [
-        (dat["accuracy"] == 1) & (dat["change_type"] == 1), # hit
-        (dat["accuracy"] == 0) & (dat["change_type"] == 1), # miss
-        (dat["accuracy"] == 1) & (dat["change_type"] == 0), # correct rejection
-        (dat["accuracy"] == 0) & (dat["change_type"] == 0)  # false alarm
+        (out_dat["accuracy"] == 1) & (out_dat["change_type"] == 1),
+        (out_dat["accuracy"] == 0) & (out_dat["change_type"] == 1),
+        (out_dat["accuracy"] == 1) & (out_dat["change_type"] == 0),
+        (out_dat["accuracy"] == 0) & (out_dat["change_type"] == 0)
         ]
 
-# generate a list of values to assign based on conditions above
+# list of values to assign based on conditions
 values = ["hit", "miss", "correct_rejection", "false_alarm"]
 
-# create new column and use 'np.select' to assign values
-dat["outcome"] = np.select(conditions, values, np.dtypes.Int64DType)
+# creating new column and assigning values based on outcome
+out_dat["outcome"] = np.select(conditions, values, np.dtypes.Int64DType)
 
 # write the new data to csv
-#dat.to_csv("data/example_out.csv", index = False)
-
-# see the 'example_out.csv' file for the output of the above
+#out_dat.to_csv("data/example_outcome.csv", index = False)
 
 # --- calculate proportions ignoring the 'sequence' condition
 # get counts for each outcome
-df = pd.DataFrame({"count": dat.groupby(["id", "outcome"]).size()}).reset_index()
-df = df.pivot(columns = "outcome", index = "id").reset_index()
-df = df.fillna(0)
+prop_dat = out_dat.copy()
+prop_dat = pd.DataFrame(prop_dat.groupby(["id", "outcome"], as_index = False).size())
+prop_dat = prop_dat.pivot(columns = "outcome", index = "id", values = "size").reset_index()
+prop_dat = prop_dat.fillna(0)
 
 # proportions for each outcome
-df["proportions", "hit"] = df["count", "hit"] / (df["count", "hit"] + df["count", "miss"])
-df["proportions", "miss"] = df["count", "miss"] / (df["count", "miss"] + df["count", "hit"])
-df["proportions", "correct_rejection"] = df["count", "correct_rejection"] / (df["count", "correct_rejection"] + df["count", "false_alarm"])
-df["proportions", "false_alarm"] = df["count", "false_alarm"] / (df["count", "false_alarm"] + df["count", "correct_rejection"])
+prop_dat["p_hit"] = prop_dat["hit"] / (prop_dat["hit"] + prop_dat["miss"])
+prop_dat["p_miss"] = prop_dat["miss"] / (prop_dat["miss"] + prop_dat["hit"])
+prop_dat["p_cr"] = prop_dat["correct_rejection"] / (prop_dat["correct_rejection"] + prop_dat["false_alarm"])
+prop_dat["p_fa"] = prop_dat["false_alarm"] / (prop_dat["false_alarm"] + prop_dat["correct_rejection"])
 
 # write the new data to csv
-#df.to_csv("data/example_props_nc.csv", index = False)
-
-# see the 'example_props_nc.csv' file for output of the above
+prop_dat.to_csv("data/example_proportions_nc.csv", index = False)
 
 # --- calculate proportions including the 'sequence' condition
-# get counts for each outcome
-df = pd.DataFrame({"count": dat.groupby(["id", "sequence", "outcome"]).size()}).reset_index()
-df = df.pivot(columns = "outcome", index = ["id", "sequence"]).reset_index()
-df = df.fillna(0)
+cprop_dat = out_dat.copy()
+cprop_dat = pd.DataFrame(cprop_dat.groupby(["id", "sequence", "outcome"], as_index = False).size())
+cprop_dat = cprop_dat.pivot(columns = "outcome", index = ["id", "sequence"], values = "size").reset_index()
+cprop_dat = cprop_dat.fillna(0)
 
 # proportions for each outcome
-df["proportions", "hit"] = df["count", "hit"] / (df["count", "hit"] + df["count", "miss"])
-df["proportions", "miss"] = df["count", "miss"] / (df["count", "miss"] + df["count", "hit"])
-df["proportions", "correct_rejection"] = df["count", "correct_rejection"] / (df["count", "correct_rejection"] + df["count", "false_alarm"])
-df["proportions", "false_alarm"] = df["count", "false_alarm"] / (df["count", "false_alarm"] + df["count", "correct_rejection"])
+cprop_dat["p_hit"] = cprop_dat["hit"] / (cprop_dat["hit"] + cprop_dat["miss"])
+cprop_dat["p_miss"] = cprop_dat["miss"] / (cprop_dat["miss"] + cprop_dat["hit"])
+cprop_dat["p_cr"] = cprop_dat["correct_rejection"] / (cprop_dat["correct_rejection"] + cprop_dat["false_alarm"])
+cprop_dat["p_fa"] = cprop_dat["false_alarm"] / (cprop_dat["false_alarm"] + cprop_dat["correct_rejection"])
 
 # write the new data to csv
-#df.to_csv("data/example_props_c.csv", index = False)
+cprop_dat.to_csv("data/example_proportions_c.csv", index = False)
 
 # --- calculate measures
 # d'
-dprime = df.copy()
-dprime["measure", "d_prime"] = stats.norm.ppf(dprime["proportions", "hit"]) - stats.norm.ppf(dprime["proportions", "false_alarm"])
+d_dat = cprop_dat.copy()
+d_dat["d_prime"] = stats.norm.ppf(d_dat["p_hit"]) - stats.norm.ppf(d_dat["p_fa"])
 
 # write the new data to csv
-#dprime.to_csv("data/example_dprime.csv", index = False)
-
-# see the 'example_dprime.csv' file for output of the above
+d_dat.to_csv("data/example_dprime.csv", index = False)
 
 # criterion location
-relcrit = df.copy()
-relcrit["measure", "criterion"] = -0.5 * (stats.norm.ppf(relcrit["proportions", "hit"]) + stats.norm.ppf(relcrit["proportions", "false_alarm"]))
+c_dat = cprop_dat.copy()
+c_dat["criterion"] = -0.5 * (stats.norm.ppf(c_dat["p_hit"]) + stats.norm.ppf(c_dat["p_fa"]))
 
 # write the new data to csv
-relcrit.to_csv("data/example_relcrit.csv", index = False)
+c_dat.to_csv("data/example_criterion.csv", index = False)
 
-# see the 'example_relcrit.csv' file for output of the above
+# c' (relative criterion location)
+cpr_dat = cprop_dat.copy()
+cpr_dat["c_prime"] = -0.5 * (stats.norm.ppf(cpr_dat["p_hit"]) + stats.norm.ppf(cpr_dat["p_fa"])) / (stats.norm.ppf(cpr_dat["p_hit"]) - stats.norm.ppf(cpr_dat["p_fa"]))
+
+# write the new data to csv
+cpr_dat.to_csv("data/example_cprime.csv", index = False)
+
+# likelihood ratio (beta)
+b_dat = cprop_dat.copy()
+b_dat["lr_beta"] = -0.5 * (stats.norm.ppf(b_dat["p_hit"])**2 - stats.norm.ppf(b_dat["p_fa"])**2)
+
+# write the new data to csv
+b_dat.to_csv("data/example_lrbeta.csv", index = False)
+
+# TODO: implement checking function for extreme values
