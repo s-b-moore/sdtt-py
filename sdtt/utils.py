@@ -40,6 +40,6 @@ def proportions(data, id_var, outcome_var, condition_var = None, correction = No
     dat["p_hit"] = dat["hit"] / (dat["hit"] + dat["miss"])
     dat["p_miss"] = dat["miss"] / (dat["miss"] + dat["hit"])
     dat["p_cr"] = dat["correct_rejection"] / (dat["correct_rejection"] + dat["false_alarm"])
-    dat["p_fa"] = dat["false_alarm"] / (dat["flase_alarm"] + dat["correct_rejection"])
+    dat["p_fa"] = dat["false_alarm"] / (dat["false_alarm"] + dat["correct_rejection"])
 
     return dat

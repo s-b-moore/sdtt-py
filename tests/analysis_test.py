@@ -1,3 +1,12 @@
+"""
+This script takes the underlying functionality of the sdtt package and combines it into a single
+analysis script. The primary purpose of this is to generate .csv files using the functionality
+within sdtt which is subsequently used in the unit tests you see in the current directory.
+Thus, should any changes be made to the code underlying the functions within the sdtt package,
+these will be updated here to ensure the data outputs are accurate, with tests also being updated
+to reflect any changes made.
+"""
+
 # import required libraries
 import pandas as pd
 import numpy as np
@@ -22,8 +31,9 @@ values = ["hit", "miss", "correct_rejection", "false_alarm"]
 # creating new column and assigning values based on outcome
 out_dat["outcome"] = np.select(conditions, values, np.dtypes.Int64DType)
 
+# NOTE: uncomment if not needed
 # write the new data to csv
-#out_dat.to_csv("data/example_outcome.csv", index = False)
+out_dat.to_csv("data/example_outcome.csv", index = False)
 
 # --- calculate proportions ignoring the 'sequence' condition
 # get counts for each outcome
@@ -38,6 +48,7 @@ prop_dat["p_miss"] = prop_dat["miss"] / (prop_dat["miss"] + prop_dat["hit"])
 prop_dat["p_cr"] = prop_dat["correct_rejection"] / (prop_dat["correct_rejection"] + prop_dat["false_alarm"])
 prop_dat["p_fa"] = prop_dat["false_alarm"] / (prop_dat["false_alarm"] + prop_dat["correct_rejection"])
 
+# NOTE: uncomment if not needed
 # write the new data to csv
 prop_dat.to_csv("data/example_proportions_nc.csv", index = False)
 
@@ -53,6 +64,7 @@ cprop_dat["p_miss"] = cprop_dat["miss"] / (cprop_dat["miss"] + cprop_dat["hit"])
 cprop_dat["p_cr"] = cprop_dat["correct_rejection"] / (cprop_dat["correct_rejection"] + cprop_dat["false_alarm"])
 cprop_dat["p_fa"] = cprop_dat["false_alarm"] / (cprop_dat["false_alarm"] + cprop_dat["correct_rejection"])
 
+# NOTE: uncomment if not needed
 # write the new data to csv
 cprop_dat.to_csv("data/example_proportions_c.csv", index = False)
 
@@ -61,6 +73,7 @@ cprop_dat.to_csv("data/example_proportions_c.csv", index = False)
 d_dat = cprop_dat.copy()
 d_dat["d_prime"] = stats.norm.ppf(d_dat["p_hit"]) - stats.norm.ppf(d_dat["p_fa"])
 
+# NOTE: uncomment if not needed
 # write the new data to csv
 d_dat.to_csv("data/example_dprime.csv", index = False)
 
@@ -68,13 +81,16 @@ d_dat.to_csv("data/example_dprime.csv", index = False)
 c_dat = cprop_dat.copy()
 c_dat["criterion"] = -0.5 * (stats.norm.ppf(c_dat["p_hit"]) + stats.norm.ppf(c_dat["p_fa"]))
 
+# NOTE: uncomment if not needed
 # write the new data to csv
 c_dat.to_csv("data/example_criterion.csv", index = False)
 
+# TODO: calculation of c' will currently fail due to extreme values (will be fixed once checker has been implemented)
 # c' (relative criterion location)
 cpr_dat = cprop_dat.copy()
 cpr_dat["c_prime"] = -0.5 * (stats.norm.ppf(cpr_dat["p_hit"]) + stats.norm.ppf(cpr_dat["p_fa"])) / (stats.norm.ppf(cpr_dat["p_hit"]) - stats.norm.ppf(cpr_dat["p_fa"]))
 
+# NOTE: uncomment if not needed
 # write the new data to csv
 cpr_dat.to_csv("data/example_cprime.csv", index = False)
 
@@ -82,6 +98,7 @@ cpr_dat.to_csv("data/example_cprime.csv", index = False)
 b_dat = cprop_dat.copy()
 b_dat["lr_beta"] = -0.5 * (stats.norm.ppf(b_dat["p_hit"])**2 - stats.norm.ppf(b_dat["p_fa"])**2)
 
+# NOTE: uncomment if not needed
 # write the new data to csv
 b_dat.to_csv("data/example_lrbeta.csv", index = False)
 
