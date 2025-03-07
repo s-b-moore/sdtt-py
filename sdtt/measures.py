@@ -13,7 +13,6 @@ def criterion(data, hit_var, fa_var):
     dat["criterion"] = stats.norm.ppf(dat[hit_var] + stats.norm.ppf(dat[fa_var]))
     return dat
 
-# TODO: c' calculation currently not functional (need to implement checker for extreme values)
 # function to calculate c'
 def cprime(data, hit_var, fa_var):
     dat = data.copy()
