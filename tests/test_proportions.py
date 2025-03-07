@@ -52,6 +52,9 @@ class TestProps(unittest.TestCase):
         c_res = sdtt.proportions(dat, id_var = "id", outcome_var = "outcome", condition_var = "sequence", correction = None)
         assert_frame_equal(c_res, dfc)
 
+# TODO: remove this once checker is implemented correctly
+sdtt.utils.check_extreme(dfc)
+
 if __name__ == "__main__":
     unittest.main()
 

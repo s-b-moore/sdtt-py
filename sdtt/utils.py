@@ -1,6 +1,7 @@
 # import required libraries
 import pandas as pd
 import numpy as np
+from scipy import stats
 
 # function to assign outcomes to binary data
 def outcomes(data, accuracy_var, signal_var):
@@ -41,5 +42,37 @@ def proportions(data, id_var, outcome_var, condition_var = None, correction = No
     dat["p_miss"] = dat["miss"] / (dat["miss"] + dat["hit"])
     dat["p_cr"] = dat["correct_rejection"] / (dat["correct_rejection"] + dat["false_alarm"])
     dat["p_fa"] = dat["false_alarm"] / (dat["false_alarm"] + dat["correct_rejection"])
+
+    # run the function to check proportions for extreme values
+    dat = check_extreme(dat)
+
+    return dat
+
+# function to check proportions for extreme values
+def check_extreme(data):
+    dat = data.copy()
+
+    # simplest method is to calculate d' and find any infinite values
+    dat["d_prime"] = stats.norm.ppf(dat["p_hit"]) - stats.norm.ppf(dat["p_fa"])
+
+    if np.isinf(dat["d_prime"]).values.any():
+        print("Extreme values detected. Recalculating proportions...")
+
+        # apply the Hautus (1995) correction
+        dat["hit"] = dat["hit"] + 0.5
+        dat["miss"] = dat["miss"] + 0.5
+        dat["correct_rejection"] = dat["correct_rejection"] + 0.5
+        dat["false_alarm"] = dat["false_alarm"] + 0.5
+
+        # recalculate proportions
+        dat["p_hit"] = dat["hit"] / (dat["hit"] + dat["miss"])
+        dat["p_miss"] = dat["miss"] / (dat["miss"] + dat["hit"])
+        dat["p_cr"] = dat["correct_rejection"] / (dat["correct_rejection"] + dat["false_alarm"])
+        dat["p_fa"] = dat["false_alarm"] / (dat["false_alarm"] + dat["correct_rejection"])
+
+    else:
+        print("No extreme values detected; proceed with analysis.")
+
+    dat = dat.drop(columns = ["d_prime"])
 
     return dat

@@ -20,6 +20,10 @@ df_c = pd.read_csv("data/example_proportions_c.csv") # data for including 'seque
 # calculate d' ignoring 'sequence' condition
 df_nc["d_prime"] = stats.norm.ppf(df_nc["p_hit"]) - stats.norm.ppf(df_nc["p_fa"])
 
+df_c["d_prime"] = stats.norm.ppf(df_c["p_hit"]) - stats.norm.ppf(df_c["p_fa"])
+
+print(df_c)
+
 # calculate d' including 'sequence' condition
 
 

@@ -31,9 +31,9 @@ values = ["hit", "miss", "correct_rejection", "false_alarm"]
 # creating new column and assigning values based on outcome
 out_dat["outcome"] = np.select(conditions, values, np.dtypes.Int64DType)
 
-# NOTE: uncomment if not needed
+# NOTE: comment out if not needed
 # write the new data to csv
-out_dat.to_csv("data/example_outcome.csv", index = False)
+#out_dat.to_csv("data/example_outcome.csv", index = False)
 
 # --- calculate proportions ignoring the 'sequence' condition
 # get counts for each outcome
@@ -48,9 +48,9 @@ prop_dat["p_miss"] = prop_dat["miss"] / (prop_dat["miss"] + prop_dat["hit"])
 prop_dat["p_cr"] = prop_dat["correct_rejection"] / (prop_dat["correct_rejection"] + prop_dat["false_alarm"])
 prop_dat["p_fa"] = prop_dat["false_alarm"] / (prop_dat["false_alarm"] + prop_dat["correct_rejection"])
 
-# NOTE: uncomment if not needed
+# NOTE: comment out if not needed
 # write the new data to csv
-prop_dat.to_csv("data/example_proportions_nc.csv", index = False)
+#prop_dat.to_csv("data/example_proportions_nc.csv", index = False)
 
 # --- calculate proportions including the 'sequence' condition
 cprop_dat = out_dat.copy()
@@ -64,42 +64,70 @@ cprop_dat["p_miss"] = cprop_dat["miss"] / (cprop_dat["miss"] + cprop_dat["hit"])
 cprop_dat["p_cr"] = cprop_dat["correct_rejection"] / (cprop_dat["correct_rejection"] + cprop_dat["false_alarm"])
 cprop_dat["p_fa"] = cprop_dat["false_alarm"] / (cprop_dat["false_alarm"] + cprop_dat["correct_rejection"])
 
-# NOTE: uncomment if not needed
+# NOTE: comment out if not needed
+# NOTE: this data contains extreme proportions and will return inf for some measures and prevent calculation of others
 # write the new data to csv
-cprop_dat.to_csv("data/example_proportions_c.csv", index = False)
+#cprop_dat.to_csv("data/example_proportions_c.csv", index = False)
 
-# --- calculate measures
+# --- check proportions to ensure no extreme values are present
+# NOTE: extreme values are only present in the conditional example data provided (cprop_dat)
+ext_props = cprop_dat.copy()
+
+# simplest method is to check for inf values in d'
+ext_props["d_prime"] = stats.norm.ppf(ext_props["p_hit"]) - stats.norm.ppf(ext_props["p_fa"])
+
+if np.isinf(ext_props["d_prime"]).values.any():
+    print("Extreme values detected. Recalculating proportions...")
+    ext_dat = ext_props.copy()
+    ext_dat["hit"] = ext_dat["hit"] + 0.5
+    ext_dat["miss"] = ext_dat["miss"] + 0.5
+    ext_dat["correct_rejection"] = ext_dat["correct_rejection"] + 0.5
+    ext_dat["false_alarm"] = ext_dat["false_alarm"] + 0.5
+    ext_dat["p_hit"] = ext_dat["hit"] / (ext_dat["hit"] + ext_dat["miss"])
+    ext_dat["p_miss"] = ext_dat["miss"] / (ext_dat["miss"] + ext_dat["hit"])
+    ext_dat["p_cr"] = ext_dat["correct_rejection"] / (ext_dat["correct_rejection"] + ext_dat["false_alarm"])
+    ext_dat["p_fa"] = ext_dat["false_alarm"] / (ext_dat["false_alarm"] + ext_dat["correct_rejection"])
+else:
+    print("No extreme values detected.")
+
+# recalculate d' to test
+ext_dat["d_prime"] = stats.norm.ppf(ext_dat["p_hit"]) - stats.norm.ppf(ext_dat["p_fa"])
+
+ext_dat = ext_dat.drop(columns = ["d_prime"])
+
+# NOTE: comment out if not needed
+# write the new data to csv
+ext_dat.to_csv("data/example_corrected.csv", index = False)
+
+# --- calculate measures (using corrected data)
 # d'
-d_dat = cprop_dat.copy()
+d_dat = ext_dat.copy()
 d_dat["d_prime"] = stats.norm.ppf(d_dat["p_hit"]) - stats.norm.ppf(d_dat["p_fa"])
 
-# NOTE: uncomment if not needed
+# NOTE: comment out if not needed
 # write the new data to csv
-d_dat.to_csv("data/example_dprime.csv", index = False)
+#d_dat.to_csv("data/example_dprime.csv", index = False)
 
 # criterion location
-c_dat = cprop_dat.copy()
+c_dat = ext_dat.copy()
 c_dat["criterion"] = -0.5 * (stats.norm.ppf(c_dat["p_hit"]) + stats.norm.ppf(c_dat["p_fa"]))
 
-# NOTE: uncomment if not needed
+# NOTE: comment out if not needed
 # write the new data to csv
-c_dat.to_csv("data/example_criterion.csv", index = False)
+#c_dat.to_csv("data/example_criterion.csv", index = False)
 
-# TODO: calculation of c' will currently fail due to extreme values (will be fixed once checker has been implemented)
 # c' (relative criterion location)
-cpr_dat = cprop_dat.copy()
+cpr_dat = ext_dat.copy()
 cpr_dat["c_prime"] = -0.5 * (stats.norm.ppf(cpr_dat["p_hit"]) + stats.norm.ppf(cpr_dat["p_fa"])) / (stats.norm.ppf(cpr_dat["p_hit"]) - stats.norm.ppf(cpr_dat["p_fa"]))
 
-# NOTE: uncomment if not needed
+# NOTE: comment out if not needed
 # write the new data to csv
-cpr_dat.to_csv("data/example_cprime.csv", index = False)
+#cpr_dat.to_csv("data/example_cprime.csv", index = False)
 
 # likelihood ratio (beta)
-b_dat = cprop_dat.copy()
+b_dat = ext_dat.copy()
 b_dat["lr_beta"] = -0.5 * (stats.norm.ppf(b_dat["p_hit"])**2 - stats.norm.ppf(b_dat["p_fa"])**2)
 
-# NOTE: uncomment if not needed
+# NOTE: comment out if not needed
 # write the new data to csv
-b_dat.to_csv("data/example_lrbeta.csv", index = False)
-
-# TODO: implement checking function for extreme values
+#b_dat.to_csv("data/example_lrbeta.csv", index = False)
